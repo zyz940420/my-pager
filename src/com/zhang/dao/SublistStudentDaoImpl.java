@@ -14,59 +14,68 @@ public class SublistStudentDaoImpl implements StudentDao {
 
 	@Override
 	public Pager<Student> findStudent(Student searchModel, int pageNum, int pageSize) {
-		List<Student> allStudentList = this.getAllStudent(searchModel);
-		if (allStudentList == null || allStudentList.isEmpty()) {
+		List<Student> allStudenList = getAllStudent(searchModel);
+		if (allStudenList == null || allStudenList.isEmpty()) {
 			return null;
 		}
-		
-		Pager<Student> pager = new Pager<>(pageNum, pageSize, allStudentList);
-		
+
+		Pager<Student> pager = new Pager<Student>(pageNum, pageSize, allStudenList);
+
 		return pager;
 	}
 
 	/**
-	 * 模仿获取所有学生数据
+	 * 模仿获取所有数据
 	 * 
 	 * @param searchModel
 	 *            查询参数
 	 * @return 查询结果
 	 */
-	public List<Student> getAllStudent(Student searchModel) {
+	private static List<Student> getAllStudent(Student searchModel) {
 		List<Student> result = new ArrayList<Student>();
-		List<Object> paramList = new ArrayList<>();
-		
+		List<Object> paramList = new ArrayList<Object>();
+
 		String stuName = searchModel.getStuName();
 		int gender = searchModel.getGender();
-		
+
 		StringBuilder sql = new StringBuilder("select * from t_student where 1=1");
-		if(stuName!=null&&!stuName.equals("")) {
+
+		if (stuName != null && !stuName.equals("")) {
 			sql.append(" and stu_name like ?");
-			paramList.add("%"+stuName.trim()+"%");
+			paramList.add("%" + stuName + "%");
 		}
-		if (gender == Constant.GENDER_MALE || gender == Constant.GENDER_FEMALE) {
+
+		if (gender == Constant.GENDER_FEMALE || gender == Constant.GENDER_MALE) {
 			sql.append(" and gender = ?");
 			paramList.add(gender);
 		}
-		
+
 		JdbcUtil jdbcUtil = null;
 		try {
 			jdbcUtil = new JdbcUtil();
-			jdbcUtil.getConnection();
+			jdbcUtil.getConnection(); // 获取数据库链接
 			List<Map<String, Object>> mapList = jdbcUtil.findResult(sql.toString(), paramList);
 			if (mapList != null && !mapList.isEmpty()) {
 				for (Map<String, Object> map : mapList) {
-					Student student = new Student(map);
-					result.add(student);
+					Student s = new Student(map);
+					result.add(s);
 				}
 			}
 		} catch (SQLException e) {
-			throw new RuntimeException("获取数据异常！");
-		}finally {
-			if(jdbcUtil!=null) {
-				jdbcUtil.releaseConn();
+			throw new RuntimeException("查询所有数据异常！", e);
+		} finally {
+			if (jdbcUtil != null) {
+				jdbcUtil.releaseConn(); // 一定要释放资源
 			}
 		}
+
 		return result;
 	}
 
+	public static void main(String[] args) {
+		List<Student> lst = getAllStudent(new Student());
+		for (Student s : lst) {
+			System.out.println(s);
+		}
+	}
 }

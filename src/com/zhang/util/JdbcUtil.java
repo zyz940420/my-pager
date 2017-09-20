@@ -119,7 +119,7 @@ public class JdbcUtil {
 		pstmt = connection.prepareStatement(sql);
 		if (params != null && !params.isEmpty()) {
 			for (int i = 0; i < params.size(); i++) {
-				pstmt.setObject(index++, params.get(i));
+				pstmt.setObject(index++, (String.valueOf(params.get(i))));
 			}
 		}
 		resultSet = pstmt.executeQuery();
